@@ -1,0 +1,172 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Data;
+
+namespace project_logic_client_on_form
+{
+    public partial class Form2 : Form
+    {
+        SqlConnection conect = new SqlConnection(@"Data Source=ВАСЯ-ПК\SQLEXPRESS;Initial Catalog=Logic;Integrated Security=True");
+        SqlDataAdapter dataAdapter = new SqlDataAdapter();
+      //  String connectionString = @"Data Source=ВАСЯ-ПК\SQLEXPRESS;Initial Catalog=Logic;Integrated Security=True";
+
+      
+        public int HasRows_turyst(SqlConnection connection,SqlCommand sql_comand)
+        {
+            int i = 0;
+                connection.Open();
+                sql_comand.Connection = connection;
+                SqlDataReader reader = sql_comand.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    while (reader.Read()) { i++; value.email_turyst = reader.GetString(0); int id = reader.GetInt32(1); value._id_turyst = id.ToString(); }
+                }
+                else
+                {
+                    MessageBox.Show("Дані відсутні. \nПеревірте правильність введених даних.");
+                }
+                reader.Close();
+                connection.Close();
+            return i;
+        }
+        public int HasRows_admin(SqlConnection connection, SqlCommand sql_comand)
+        {
+            int i = 0;
+            connection.Open();
+            sql_comand.Connection = connection;
+            SqlDataReader reader = sql_comand.ExecuteReader();
+            if (reader.HasRows)
+            {
+                while (reader.Read()) { i++; int id = reader.GetInt32(0); value._id_admin = id.ToString(); }
+            }
+            else
+            {
+                MessageBox.Show("Дані відсутні. \nПеревірте правильність введених даних.");
+            }
+            reader.Close();
+            connection.Close();
+            return i;
+        }
+        public void SetRows(SqlConnection connection, string text_sql_comand)
+        {
+            connection.Open();
+            SqlCommand sql_comand = new SqlCommand();
+            sql_comand.CommandText = text_sql_comand;
+            sql_comand.Connection = conect;
+            sql_comand.ExecuteNonQuery();
+            //sql_comand.Clone();
+            MessageBox.Show("Реєстрація пройшла успішно.");
+            connection.Close();
+        }
+        public Form2()
+        {
+            InitializeComponent();
+            radioButton1.Checked = true;
+        }
+
+        private void turystToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            statusToolStripMenuItem.Text = turystToolStripMenuItem.Text;
+            radioButton1.Visible = true;
+            radioButton2.Visible = true;
+        }
+
+        private void adminToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            statusToolStripMenuItem.Text = adminToolStripMenuItem.Text;
+            radioButton1.Visible = false;
+            radioButton2.Visible = false;
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            label4.Visible = false;
+            textBox4.Visible = false;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (statusToolStripMenuItem.Text == "Турист")
+                if (textBox1.Text == "")
+                    MessageBox.Show("Name invalid data");
+                else
+                    if (textBox2.Text == "")
+                        MessageBox.Show("Surname invalid data.");
+                    else
+                        if (textBox3.Text == "")
+                            MessageBox.Show("Password invalid data.");
+                        else
+                        {
+                            value.Name_turyst = textBox1.Text;
+                            value.Surname_turyst = textBox2.Text;
+                            value.password_turyst = textBox3.Text;
+                            if (radioButton1.Checked == true)
+                            {
+                                SqlCommand comand = new SqlCommand("SELECT email,Turyst_ID FROM Turyst WHERE Name LIKE '" + value.Name_turyst + "%' AND SurName LIKE '" + value.Surname_turyst + "%' AND Password LIKE '" + value.password_turyst + "%'", conect);
+                                int k = HasRows_turyst(conect, comand);
+                                if (k == 1)
+                                {
+                                    base.Hide();
+                                    Form1 frm = new Form1();
+                                    frm.Show();
+                                }
+                            }
+                            else
+                                if (textBox4.Text == "")
+                                    MessageBox.Show("Email invalid data");
+                                else
+                                {
+                                    value.email_turyst = textBox4.Text;
+                                    if (radioButton2.Checked == true)
+                                    {
+                                        SetRows(conect, "INSERT INTO [dbo].[Turyst]"
+                                                                    + "([Name]"
+                                                                    + ",[SurName]"
+                                                                    + ",[Password]"
+                                                                    + ",[email]) "
+                                                                    + " VALUES ('" + value.Name_turyst + "','" + value.Surname_turyst + "','" + value.password_turyst + "','" + value.email_turyst + "')");
+
+                                    }
+                                }
+                        }
+            else
+            {
+                if (textBox1.Text == "")
+                    MessageBox.Show("Name invalid data");
+                else
+                    if (textBox2.Text == "")
+                        MessageBox.Show("Surname invalid data.");
+                    else
+                        if (textBox3.Text == "")
+                            MessageBox.Show("Password invalid data.");
+                        else
+                        {
+                            value.Name_admin = textBox1.Text;
+                            value.Surname_admin = textBox2.Text;
+                            value.password_admin = textBox3.Text;
+                            SqlCommand comand = new SqlCommand("SELECT ID FROM Administrator WHERE Name LIKE '" + value.Name_admin + "%' AND Surname LIKE '" + value.Surname_admin + "%' AND Password LIKE '" + value.password_admin + "%'", conect);
+                            int k = HasRows_admin(conect, comand);
+                            if (k == 1)
+                            {
+                                base.Hide();
+                                Admin frm = new Admin();
+                                frm.Show();
+                            }
+                        }
+            }
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            label4.Visible = true;
+            textBox4.Visible = true;
+        }
+    }
+}
