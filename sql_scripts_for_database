@@ -1,0 +1,1639 @@
+USE [master]
+GO
+
+IF DB_ID('Logic') IS NOT NULL
+DROP DATABASE Logic
+GO
+
+/****** Object:  Database [Logic]    Script Date: 16.05.2013 23:55:33 ******/
+CREATE DATABASE [Logic] ON  PRIMARY 
+( NAME = N'Logic', FILENAME = N'E:\project_logic_2012\Logic.mdf' , SIZE = 6016KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
+ LOG ON 
+( NAME = N'Logic_log', FILENAME = N'E:\project_logic_2012\Logic_log.ldf' , SIZE = 1024KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Turyst]    Script Date: 20.05.2013 21:56:13 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Turyst](
+  [Turyst_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](20) NOT NULL,
+	[SurName] [nvarchar](30) NOT NULL,
+	[Password] [nvarchar](10) NOT NULL,
+	[email] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Turyst] PRIMARY KEY CLUSTERED 
+(
+	[Turyst_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Location]    Script Date: 16.05.2013 23:59:12 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Location](
+	[Name_Location] [nvarchar](20) NOT NULL,
+	[Location_ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_Location] PRIMARY KEY CLUSTERED 
+(
+	[Name_Location] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [IX_Location] UNIQUE NONCLUSTERED 
+(
+	[Location_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Hotel]    Script Date: 16.05.2013 23:59:58 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Hotel](
+	[Hotel_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Hotel_Name] [nvarchar](20) NOT NULL,
+	[Name_merezha] [nvarchar](20) NULL,
+	[Star] [int] NULL,
+	[LocationFK] [nvarchar](20) NOT NULL,
+	[Adress] [nvarchar](50) NULL,
+	[Phone] [nvarchar](15) NULL,
+	[email] [nvarchar](50) NULL,
+ CONSTRAINT [PK_Hotel] PRIMARY KEY CLUSTERED 
+(
+	[Hotel_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Hotel]  WITH CHECK ADD  CONSTRAINT [FK_Hotel_Location] FOREIGN KEY([LocationFK])
+REFERENCES [dbo].[Location] ([Name_Location])
+GO
+
+ALTER TABLE [dbo].[Hotel] CHECK CONSTRAINT [FK_Hotel_Location]
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Room]    Script Date: 17.05.2013 0:01:05 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Room](
+	[Room_Number] [int] NOT NULL,
+	[Category] [nvarchar](10) NULL,
+	[Price] [money] NULL,
+	[Hotel_IDFK] [int] NOT NULL,
+	[Room_ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_Room] PRIMARY KEY CLUSTERED 
+(
+	[Room_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [IX_Room] UNIQUE NONCLUSTERED 
+(
+	[Room_Number] ASC,
+	[Hotel_IDFK] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Room]  WITH CHECK ADD  CONSTRAINT [FK_Room_Hotel] FOREIGN KEY([Hotel_IDFK])
+REFERENCES [dbo].[Hotel] ([Hotel_ID])
+GO
+
+ALTER TABLE [dbo].[Room] CHECK CONSTRAINT [FK_Room_Hotel]
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Room_reservation]    Script Date: 20.05.2013 21:56:46 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Room_reservation](
+	[Room_IDFK] [int] NOT NULL,
+	[Date_beginning] [date] NOT NULL,
+	[Date_end] [date] NOT NULL,
+	[Turyst_IDFK] [int] NOT NULL,
+	[Price] [money] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_Room_reservation] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [IX_Room_reservation] UNIQUE NONCLUSTERED 
+(
+	[Turyst_IDFK] ASC,
+	[Date_beginning] ASC,
+	[Date_end] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Room_reservation]  WITH CHECK ADD  CONSTRAINT [FK_Room_reservation_Room1] FOREIGN KEY([Room_IDFK])
+REFERENCES [dbo].[Room] ([Room_ID])
+GO
+
+ALTER TABLE [dbo].[Room_reservation] CHECK CONSTRAINT [FK_Room_reservation_Room1]
+GO
+
+ALTER TABLE [dbo].[Room_reservation]  WITH CHECK ADD  CONSTRAINT [FK_Room_reservation_Turyst] FOREIGN KEY([Turyst_IDFK])
+REFERENCES [dbo].[Turyst] ([Turyst_ID])
+GO
+
+ALTER TABLE [dbo].[Room_reservation] CHECK CONSTRAINT [FK_Room_reservation_Turyst]
+GO
+
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Rental]    Script Date: 17.05.2013 0:30:26 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Rental](
+	[Name] [nvarchar](25) NOT NULL,
+	[Type] [nvarchar](12) NULL,
+ CONSTRAINT [PK_Procatnyk] PRIMARY KEY CLUSTERED 
+(
+	[Name] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Rental_Point]    Script Date: 17.05.2013 0:31:09 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Rental_Point](
+	[Rental_NameFK] [nvarchar](25) NOT NULL,
+	[LocationFK] [nvarchar](20) NOT NULL,
+	[Time_beginning] [time](7) NULL,
+	[Time_end] [time](7) NULL,
+	[email] [nvarchar](50) NULL,
+	[Rental_Point_ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_Rental_Point] PRIMARY KEY CLUSTERED 
+(
+	[Rental_Point_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Rental_Point]  WITH CHECK ADD  CONSTRAINT [FK_Procat_Point_Location] FOREIGN KEY([LocationFK])
+REFERENCES [dbo].[Location] ([Name_Location])
+GO
+
+ALTER TABLE [dbo].[Rental_Point] CHECK CONSTRAINT [FK_Procat_Point_Location]
+GO
+
+ALTER TABLE [dbo].[Rental_Point]  WITH CHECK ADD  CONSTRAINT [FK_Procat_Point_Procatnyk] FOREIGN KEY([Rental_NameFK])
+REFERENCES [dbo].[Rental] ([Name])
+GO
+
+ALTER TABLE [dbo].[Rental_Point] CHECK CONSTRAINT [FK_Procat_Point_Procatnyk]
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Cars]    Script Date: 17.05.2013 0:32:15 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Cars](
+	[Mark] [nvarchar](30) NOT NULL,
+	[Vypusk] [int] NULL,
+	[Places] [int] NULL,
+	[Color] [nvarchar](15) NULL,
+	[Type_kpp] [nvarchar](20) NULL,
+	[Motor] [nvarchar](20) NULL,
+	[Litr_on_100] [decimal](4, 2) NULL,
+	[Price] [money] NULL,
+	[License_plate] [nvarchar](8) NOT NULL,
+	[Car_ID] [int] IDENTITY(1,1) NOT NULL,
+	[Rental_Point_IDFK] [int] NOT NULL,
+ CONSTRAINT [PK_Cars] PRIMARY KEY CLUSTERED 
+(
+	[License_plate] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [IX_Cars_Car_ID] UNIQUE NONCLUSTERED 
+(
+	[Car_ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Cars]  WITH CHECK ADD  CONSTRAINT [FK_Cars_Rental_Point] FOREIGN KEY([Rental_Point_IDFK])
+REFERENCES [dbo].[Rental_Point] ([Rental_Point_ID])
+GO
+
+ALTER TABLE [dbo].[Cars] CHECK CONSTRAINT [FK_Cars_Rental_Point]
+GO
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Car_reservation]    Script Date: 20.05.2013 21:57:29 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Car_reservation](
+	[Date_bginning] [date] NOT NULL,
+	[Date_end] [date] NOT NULL,
+	[Turyst_IDFK] [int] NOT NULL,
+	[Location] [nvarchar](20) NULL,
+	[Price] [money] NULL,
+	[Status] [nvarchar](10) NOT NULL,
+	[Car_IDFK] [int] NOT NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_Car_reservation] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY],
+ CONSTRAINT [IX_Car_reservation] UNIQUE NONCLUSTERED 
+(
+	[Turyst_IDFK] ASC,
+	[Date_bginning] ASC,
+	[Date_end] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[Car_reservation]  WITH CHECK ADD  CONSTRAINT [FK_Car_reservation_Cars] FOREIGN KEY([Car_IDFK])
+REFERENCES [dbo].[Cars] ([Car_ID])
+GO
+
+ALTER TABLE [dbo].[Car_reservation] CHECK CONSTRAINT [FK_Car_reservation_Cars]
+GO
+
+ALTER TABLE [dbo].[Car_reservation]  WITH CHECK ADD  CONSTRAINT [FK_Car_reservation_Turyst1] FOREIGN KEY([Turyst_IDFK])
+REFERENCES [dbo].[Turyst] ([Turyst_ID])
+GO
+
+ALTER TABLE [dbo].[Car_reservation] CHECK CONSTRAINT [FK_Car_reservation_Turyst1]
+GO
+
+
+USE [Logic]
+GO
+
+/****** Object:  Table [dbo].[Administrator]    Script Date: 17.05.2013 0:33:12 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE TABLE [dbo].[Administrator](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](15) NOT NULL,
+	[Surname] [nvarchar](20) NOT NULL,
+	[Password] [nvarchar](10) NOT NULL,
+ CONSTRAINT [PK_Administrator] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Administrator]
+           ([Name]
+           ,[Surname]
+		   ,[Password])
+     VALUES
+           ('Вася','Остапчук','admin1')
+GO
+INSERT INTO [dbo].[Administrator]
+           ([Name]
+           ,[Surname]
+		   ,[Password])
+     VALUES
+           ('Орест','Лопушанський','admin2')
+GO
+INSERT INTO [dbo].[Administrator]
+           ([Name]
+           ,[Surname]
+		   ,[Password])
+     VALUES
+           ('Сергій','Храпчун','admin3')
+GO
+
+-- ++++++++++++++++++++++++++++++ test data for Location+++++++++
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Усі локації')
+GO
+
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Барселона')
+GO
+
+
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Монако')
+GO
+
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Київ')
+GO
+
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Львів')
+GO
+
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Рим')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Одесса')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Ялта')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Мілан')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Прага')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Венеція')
+GO
+INSERT INTO [dbo].[Location]
+           ([Name_Location])
+     VALUES
+           ('Берлін')
+GO
+
+-- ++++++++++++++++++++++++++++ test data for Hotel +++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Saturn','','3','Львів','','653-569-23-63','h_saturn@gmail.com')
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Viking','','3','Львів','','555-777-63-03','h_viking@gmail.com')
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Grand','','5','Монако','','186-638-666-53','h_grand@gmail.com')
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Cezar','','5','Рим','','186-423-794-53','h_cezar@gmail.com')
+GO
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Francesko','','5','Рим','','777-423-777-00','h_franc@gmail.com')
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('La Gioconda','','3','Одесса','','186-424-424-42','reception@lagioconda.odessa.ua')
+GO
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Капрі','','5','Одесса','','136-543-432-65','kapri-hotel@mail.ru')
+GO
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Marconi','','5','Мілан','','135-764-945-11','hot-Marconi@gmail.com')
+GO
+
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Augusta','','5','Берлін','','466-748-434-11','h-Augusta@gmail.com')
+GO
+INSERT INTO [dbo].[Hotel]
+           ([Hotel_Name]
+           ,[Name_merezha]
+           ,[Star]
+           ,[LocationFK]
+           ,[Adress]
+           ,[Phone]
+           ,[email])
+     VALUES
+			('Amadeus','','1','Берлін','','465-464-945-77','h-Amadeus@gmail.com')
+GO
+
+-- +++++++++++++++++++++++++ test data for Room +++++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('20','одномісна','200','2')
+GO
+
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('25','одномісна','200','2')
+GO
+
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('31','двомісна','350','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('21','одномісна','200','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('35','сімейна','450','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('37','напівлюкс','600','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('40','люкс','800','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('45','люкс','800','2')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('17','одномісна','300','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('15','одномісна','300','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('30','двомісна','450','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('20','сімейна','500','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('38','сімейна','500','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('26','напівлюкс','600','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('56','люкс','1000','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('33','люкс','1000','1')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('171','люкс','2500','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('110','сімейна','1500','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('95','сімейна','1500','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('80','люкс','2500','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('76','напівлюкс','2100','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('71','напівлюкс','2100','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('68','двомісна','1300','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('62','одномісна','1000','3')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('63','одномісна','800','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('60','одномісна','800','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('52','двомісна','1100','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('71','сімейна','1300','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('48','сімейна','1300','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('76','напівлюкс','1800','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('80','люкс','2100','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('91','люкс','2100','4')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('15','одномісна','750','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('21','одномісна','750','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('27','люкс','2000','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('18','двомісна','1000','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('30','сімейна','1300','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('36','сімейна','1300','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('42','напівлюкс','1650','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('51','люкс','2000','5')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('43','одномісна','300','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('55','одномісна','300','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('49','двомісна','650','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('62','сімейна','800','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('76','сімейна','800','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('68','напівлюкс','1200','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('81','напівлюкс','1200','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('90','люкс','1500','6')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('12','одномісна','500','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('35','одномісна','500','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('20','двомісна','750','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('38','сімейна','1000','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('44','сімейна','1000','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('49','напівлюкс','1300','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('57','люкс','1700','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('77','люкс','1700','7')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('18','одномісна','700','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('27','двомісна','1200','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('44','двомісна','1200','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('35','сімейна','1600','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('51','напівлюкс','2000','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('49','напівлюкс','2000','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('77','люкс','2400','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('63','люкс','2400','8')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('13','одномісна','600','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('27','одномісна','600','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('22','двомісна','850','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('45','двомісна','850','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('52','двомісна','850','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('34','сімейна','1200','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('58','напівлюкс','1600','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('70','люкс','2000','9')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('10','одномісна','150','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('22','одномісна','150','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('56','одномісна','150','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('19','двомісна','300','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('27','двомісна','300','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('34','сімейна','500','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('43','напівлюкс','700','10')
+GO
+INSERT INTO [dbo].[Room]
+           ([Room_Number]
+           ,[Category]
+           ,[Price]
+           ,[Hotel_IDFK])
+     VALUES
+			('50','люкс','900','10')
+GO
+-- ++++++++++++++++++++++++++++ test data for Turyst +++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Turyst]
+           ([Name]
+           ,[SurName]
+		   ,[Password]
+           ,[email])
+     VALUES
+			('Сергій','Храпчун','client1','sergiyhrapchun@gmail.com')
+GO
+
+INSERT INTO [dbo].[Turyst]
+           ([Name]
+           ,[SurName]
+		   ,[Password]
+           ,[email])
+     VALUES
+			('Василь','Остапчук','client2','Ostapchyk.Vasia@gmail.com')
+GO
+INSERT INTO [dbo].[Turyst]
+           ([Name]
+           ,[SurName]
+		   ,[Password]
+           ,[email])
+     VALUES
+			('Орест','Лопушанський','client3','orestmshan@mail.ru')
+GO
+
+-- ++++++++++++++++++++++++++++ test data for Room_reservation +++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Room_reservation]
+           ([Room_IDFK]
+           ,[Date_beginning]
+           ,[Date_end]
+           ,[Turyst_IDFK]
+           ,[Price])
+     VALUES
+			('8','2013-05-04','2013-05-08','2','10000')
+GO
+
+INSERT INTO [dbo].[Room_reservation]
+           ([Room_IDFK]
+           ,[Date_beginning]
+           ,[Date_end]
+           ,[Turyst_IDFK]
+           ,[Price])
+     VALUES
+			('11','2013-06-01','2013-06-10','3','8000')
+GO
+INSERT INTO [dbo].[Room_reservation]
+           ([Room_IDFK]
+           ,[Date_beginning]
+           ,[Date_end]
+           ,[Turyst_IDFK]
+           ,[Price])
+     VALUES
+			('7','2013-05-01','2013-05-02','1','1000')
+GO
+
+--- +++++++++++++++++++++++++ test date for Rental ++++++++
+
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Rental]
+           ([Name]
+           ,[Type])
+     VALUES
+			('EuroMotors','регіональний')
+GO
+
+INSERT INTO [dbo].[Rental]
+           ([Name]
+           ,[Type])
+     VALUES
+			('Укр-авто','локальний')
+GO
+INSERT INTO [dbo].[Rental]
+           ([Name]
+           ,[Type])
+     VALUES
+			('SportCar','регіональний')
+GO
+INSERT INTO [dbo].[Rental]
+           ([Name]
+           ,[Type])
+     VALUES
+			('Mercedes','регіональний')
+GO
+
+-- +++++++++++++++++++ test data for Rental_Point ++++++++
+
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end] 
+           ,[email])
+     VALUES
+			('EuroMotors','Монако','8:00','20:00','r-motors_monako@gmail.com')
+GO
+
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end]
+           ,[email])
+     VALUES
+			('EuroMotors','Барселона','8:00','21:00','r-cars_barsa@gmail.com')
+GO
+
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end]
+           ,[email])
+     VALUES
+			('EuroMotors','Берлін','8:00','21:00','r-carM_beRlin@gmail.com')
+GO
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end]
+           ,[email])
+     VALUES
+			('EuroMotors','Прага','8:00','21:00','r-motoR_Praha@gmail.com')
+GO
+
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end]
+           ,[email])
+     VALUES
+			('EuroMotors','Київ','10:00','19:00','kyiv.avto@mail.ru')
+GO
+INSERT INTO [dbo].[Rental_Point]
+           ([Rental_NameFK]
+           ,[LocationFK]
+		   ,[Time_beginning]
+		   ,[Time_end]
+           ,[email])
+     VALUES
+			('SportCar','Рим','8:00','19:00','r-Sport_Roma@gmail.com')
+GO
+
+-- ++++++++++++++++++++++++++++ test data for Cars ++++++++++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,Litr_on_100
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('BMW','2009','5','чорний','механічна 5 ст.','бензиновий v6','13.50','2000','IM 2635L','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,Litr_on_100
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('BMW M6','2009','5','білий','механічна 5 ст.','бензиновий v6','13.50','2000','IM 7654A','1')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('BMW M6','2009','5','білий','механічна 5 ст.','бензиновий v6','13.50','2000','IM 4687A','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,Litr_on_100
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('BMW E35','2009','5','чорний','механічна 5 ст.','бензиновий v6','13.50','2000','IM 2671K','2')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('BMW M3','2009','5','чорний','механічна 5 ст.','бензиновий v6','13.50','2000','IF 4555L','4')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK]) 
+     VALUES
+			('Mercedes Benz A - Class','2010','5','синій','автомат 6 ст.','бензиновий','11.00','2500','D QT 289','1')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK]) 
+     VALUES
+			('Mercedes Benz A - Class','2010','5','сірий','автомат 6 ст.','бензиновий','11.00','2500','D QT 226','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz C -Class','2007','5','білий','автомат 6 ст.','бензиновий','12.30','3000','D RT 799','1')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz C -Class','2007','5','білий','автомат 6 ст.','бензиновий','12.30','3000','D RT 449','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz G -Class','2010','5','чорний','автомат 6 ст.','V6-турбодизель','15.00','3000','D АT 777','2')
+GO
+
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz G -Class','2010','5','чорний','автомат 6 ст.','V6-турбодизель','15.00','3000','D АT 745','3')
+GO
+
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz A -Class','2010','5','синій','автомат 6 ст.','бензиновий','13.65','2500','D QT 759','1')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Mercedes-Benz A -Class','2010','5','синій','автомат 6 ст.','бензиновий','13.65','2500','D QT 732','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Volkswagen Golf 6','2012','4','сірий','автомат 5 ст.','бензиновий','11.70','2500','D АЕ 197','4')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Volkswagen Golf 6','2012','4','сірий','автомат 5 ст.','бензиновий','11.70','2500','D АH 697','3')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Lamborghini Aventador LP700-4','2012','2','чорний','автомат 7 ст.','бензиновий v12','17.20','5000','I RQ 007','6')
+GO
+INSERT INTO [dbo].[Cars]
+           ([Mark]
+           ,[Vypusk]
+           ,[Places]
+           ,[Color]
+           ,[Type_kpp]
+           ,[Motor]
+           ,[Litr_on_100]
+           ,[Price]
+           ,[License_plate]
+           ,[Rental_Point_IDFK])
+     VALUES
+			('Nissan GT-R','2013','2','синій','автомат 6 ст.','бензиновий v6','12.20','4000','IS 8888E','1')
+GO
+-- ++++++++++++++++++++++++ test data for Car-reservation ++++++++
+USE [Logic]
+GO
+
+INSERT INTO [dbo].[Car_reservation]
+           ([Date_bginning]
+           ,[Date_end]
+           ,[Turyst_IDFK]
+           ,[Location]
+           ,[Price]
+		   ,[Status]
+           ,[Car_IDFK])
+     VALUES
+			('2013-05-04','2013-05-20','1','Монако','16000','дійсна','17')
+GO
+
+INSERT INTO [dbo].[Car_reservation]
+           ([Date_bginning]
+           ,[Date_end]
+           ,[Turyst_IDFK]
+           ,[Location]
+           ,[Price]
+		   ,[Status]
+           ,[Car_IDFK])
+     VALUES
+			('2013-05-01','2013-06-10','3','Рим','50000','дійсна','16')
+GO
