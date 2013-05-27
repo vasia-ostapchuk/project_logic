@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.Data.SqlClient;
-using System.Data;
 
 namespace project_logic_client_on_form
 {
@@ -19,7 +18,6 @@ namespace project_logic_client_on_form
         SqlDataAdapter d_adapter = new SqlDataAdapter();
         SqlDataAdapter dataAdapter = new SqlDataAdapter();
         DataSet data_set = new DataSet();
-        SqlCommandBuilder comand_b;
 
         //string M = new string[1000, 10];
 
@@ -27,7 +25,6 @@ namespace project_logic_client_on_form
         int tabcontrol_status = 0; // для контролю яка вкладка є активною on tabControl1
         int tabcontrol_status2 = 0; // для контролю яка вкладка є активною on tabControl2
 
-        string data_begin = "", data_end = ""; // для визначеня дати активної заявки 
         string name_hotel = "";
         string _id_room_reservation = "";
         string _id_car_reservation = "";
@@ -66,10 +63,7 @@ namespace project_logic_client_on_form
             label5.Text = label2.Text;
             label2.Visible = true;
             label5.Visible = true;
-           // name_LocationLabel.
-           //Height = 376;
-           // Width = 445;
-
+            label22.Text = "";
             // ************** Особисті дані **********
             label6.Text = value.Name_turyst;
             label8.Text = value.Surname_turyst;
@@ -103,19 +97,36 @@ namespace project_logic_client_on_form
 
         public void Room_view()
         {
-            GetData("select Room_Number AS Номер,Category AS Ктегорія,Price AS Ціна_оренди, Hotel_IDFK, Room_ID from Room "
-                        + "where "
-                        + "Room_ID NOT IN (select Room_IDFK from Room_reservation where status = 'дійсна') "
-                        + "AND Hotel_IDFK IN (select Hotel_ID from Hotel where Hotel_Name ='" + name_hotel + "' and LocationFK = '" + value.nameLocation + "') order by Category", dataGridView5, bindingSource_room);
+            label3.Visible = false;
+            label22.Text = "Вільні кімнати" + value.label;
+            GetData("select Room_Number AS Номер,Category AS Категорія,Price AS Ціна_оренди, Hotel_IDFK, Room_ID FROM Room where "
+    		        +"Room_ID NOT IN (select Room_IDFK FROM Room_reservation where  Status ='дійсна' "
+					+"AND((Date_end >= CAST('"+value.date_beginning+"' AS date) and Date_end <= CAST('"+value.date_end+"' AS date)) "
+					+"OR (Date_beginning >= CAST('"+value.date_beginning+"' AS date) and Date_beginning <= CAST('"+value.date_end+"' AS date))))"
+			        +"AND Hotel_IDFK IN (select Hotel_ID from Hotel where Hotel_Name Like '"+name_hotel+"%' and LocationFK Like '"+value.nameLocation+"%')",dataGridView5,bindingSource_room);
+            if (dataGridView5.RowCount == 0) { label20.Visible = true; } else { label20.Visible = false;}
             dataGridView5.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridView5.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridView5.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             dataGridView5.Columns[3].Visible = false; // Hotel_IDFK не відображаєм
             dataGridView5.Columns[4].Visible = false; // Room_ID  нк відображаєм
         }
+        public void Car_view()
+        {
+            label20.Visible = false;
+            label22.Text = "Вільні автомобілі" + value.label;
+            GetData("select Mark AS Марка,Color AS Колір,License_plate AS Номер, Type_kpp AS тип_КПП, Motor AS Двигун, Vypusk AS Рік_випуску, Places AS Мість, Litr_on_100 AS витрати_на_100, Cars.Price AS Ціна_прокату FROM Cars where "
+                         + "Car_ID NOT IN (select Car_IDFK FROM Car_reservation where  Status ='дійсна' "
+                         + "AND((Date_end >= CAST('" + value.date_beginning + "' AS date) and Date_end <= CAST('" + value.date_end + "' AS date)) "
+                         + "OR (Date_bginning >= CAST('" + value.date_beginning + "' AS date) and Date_bginning <= CAST('" + value.date_end + "' AS date)))) "
+                         + "AND Rental_Point_IDFK IN (select Rental_Point_ID from Rental_Point where LocationFK Like '" + value.nameLocation + "%' AND Rental_NameFK LIKE '" + Rental_name + "%')", dataGridView3, bindingSource2);
+            if (dataGridView3.RowCount == 0) { label3.Visible = true; } else { label3.Visible = false;}
+        }
 
         private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e) // 
         {
+            dataGridView5.Visible = false;
+            dataGridView3.Visible = true;
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dataGridView2.Rows[e.RowIndex];
@@ -123,30 +134,23 @@ namespace project_logic_client_on_form
                 value.nameLocation = row.Cells["Локація"].Value.ToString();
                 Rental_name = row.Cells["Прокатник"].Value.ToString();
                 // пошук доступних автомобілів
-                GetData("select  Mark AS Марка,Color AS Колір,License_plate AS Номер, Type_kpp AS тип_КПП, Motor AS Двигун, Vypusk AS Рік_випуску, Places AS Мість, Litr_on_100 AS витрати_на_100, Cars.Price AS Ціна_прокату from Cars where "
-                    + "Car_ID NOT IN (select Car_IDFK From Car_reservation where Status = 'дійсна')"// AND Date_bginning >= CAST('"+value.date_beginning+"' AS date) AND Date_end <= CAST('"+value.date_end+"' AS date)) "
-                    + "AND "
-                    + " Rental_Point_IDFK = any (select Rental_Point_ID from Rental_Point where LocationFK LIKE '" + value.nameLocation + "%' AND Rental_NameFK LIKE '"+Rental_name+"%')", dataGridView3, bindingSource2);
+                Car_view();
                 if (dataGridView3.RowCount > 0)
                 {
-                  //  button4.Enabled = true;
-                    label3.Visible = false;
+                    button5.Enabled = true;
                 }
                 else
                 {
-                    label3.Visible = true;
-                    button4.Enabled = false;
+
                 }
             }
         }
 
-        void tabPage2_Click(object sender, System.EventArgs e)
-        {
 
-        }
-
-        private void dataGridView1_CellClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e)
+        private void dataGridView1_CellClick(object sender, System.Windows.Forms.DataGridViewCellEventArgs e) // вибір конкретного готелю
         {
+            dataGridView5.Visible = true;
+            dataGridView3.Visible = false;
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
@@ -157,24 +161,20 @@ namespace project_logic_client_on_form
                 Room_view();
                 if (dataGridView5.RowCount > 0)
                 {
-                      //button4.Enabled = true;
-                    label20.Visible = false;
+                    button5.Enabled = true;
                 }
                 else
                 {
-                    label20.Visible = true;
-                    //button4.Enabled = false;
                 }
             }
 
         }
 
-        private void dataGridView4_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView4_CellClick(object sender, DataGridViewCellEventArgs e) // вибір локації
         {
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dataGridView4.Rows[e.RowIndex];
-                //dataGridView4.RowsAdded
 
                 string name_location = row.Cells["Name_Location"].Value.ToString();
                 if (name_location == "Усі локації")
@@ -183,8 +183,6 @@ namespace project_logic_client_on_form
                 GetData("select Rental_NameFK AS Прокатник, LocationFK AS Локація, Time_beginning, Time_end, email from Rental_Point where LocationFK LIKE '" + name_location + "%'", dataGridView2, bindingSource4);
                 dataGridView1.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
                 dataGridView2.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                //viseble_vs_hide(dataGridView2, panel2,label5);
-                                
                 if (dataGridView2.RowCount > 0)
                 {
                     label5.Text = "В цій локації пункти прокату відсутні";
@@ -211,99 +209,17 @@ namespace project_logic_client_on_form
 
         private void dataGridView3_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            button4.Enabled = true;
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dataGridView3.Rows[e.RowIndex];
                 string car_number = row.Cells["Номер"].Value.ToString();
-                label21.Text = car_number;
                 value.price_car = row.Cells["Ціна_прокату"].Value.ToString();
                 GetData("select Car_ID from Cars where License_plate LIKE '"+ car_number +"%'", dataGridView_turyst, bindingSource_reserv);
-                button4.Enabled = true;
+                if (value.date_beginning != "" && value.date_end != "") button4.Enabled = true;
             }
             
         }
         
-
-        //private void button6_Click_1(object sender, EventArgs e)
-        //{
-        //    if (radioButton_Client.Checked == true)
-        //    {
-        //        if (textBox_Name.Text != "" && textBox_Surname.Text != "" && textBox_Password.Text != "")
-        //        {
-        //            if (dataGridView_turyst.RowCount >= 0)
-        //            {
-        //                int i = 0, j = 0, k = 0;
-        //                // пошук імені
-        //                for (i = 0; i < dataGridView_turyst.RowCount; i++)
-        //                    if (dataGridView_turyst[1, i].FormattedValue.ToString().Contains(textBox_Name.Text))
-        //                    {
-        //                        dataGridView_turyst.CurrentCell = dataGridView_turyst[1, i];
-        //                        break;
-        //                    }
-        //                // пошук прізвища
-        //                for (j = 0; j < dataGridView_turyst.RowCount; j++)
-        //                    if (dataGridView_turyst[2, j].FormattedValue.ToString().Contains(textBox_Surname.Text))
-        //                    {
-        //                        dataGridView_turyst.CurrentCell = dataGridView_turyst[2, j];
-        //                        break;
-        //                    }
-        //                // пошук пароля
-        //                for (k = 0; k < dataGridView_turyst.RowCount; k++)
-        //                    if (dataGridView_turyst[3, k].FormattedValue.ToString().Contains(textBox_Password.Text))
-        //                    {
-        //                        dataGridView_turyst.CurrentCell = dataGridView_turyst[3, k];
-        //                        break;
-        //                    }
-        //                if (i == j & j == k)
-        //                {
-        //                    value._id_turyst = dataGridView_turyst[0, i].Value.ToString();
-        //                    value.Name_turyst = dataGridView_turyst[1, i].Value.ToString();
-        //                    value.Surname_turyst = dataGridView_turyst[2, i].Value.ToString();
-
-        //                    base.Hide();
-        //                    Width = 1000;
-        //                    Height = 500;
-        //                    panel_log.Visible = false;
-        //                    base.Show();
-        //                   
-        //                }
-        //            }
-        //           // 
-        //        }
-        //        else
-        //            MessageBox.Show("Поля для вводу не всі є заповненми. Заповніть поля.", "Попередження");
-        //       /* else
-        //            if (checkBox1.Checked == true)
-        //            {
-        //                //MessageBox.Show("Поля для вводу не всі є заповненми. Заповніть поля.", "Попередження");
-                
-        //            base.Hide();
-        //            Width = 1000;
-        //            Height = 500;
-        //            panel_log.Visible = false;
-        //            base.Show();
-
-        //            GetData("select Name_Location from dbo.Location order by Name_Location", dataGridView4, bindingSource1);
-        //            }    */
-        //    }
-        //    if (radioButton_admin.Checked == true) {
-        //        Admin frm = new Admin();
-        //        base.Hide(); 
-        //        frm.Show();
-        //    }
-        //}
-
-        //private void radioButton_Client_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    GetData("select * from Turyst", dataGridView_turyst, bindingSource_turyst);
-        //}
-
-        //private void radioButton_admin_CheckedChanged(object sender, EventArgs e)
-        //{
-        //    GetData("select * from Administrator", dataGridView_turyst, bindingSource_admin);
-        //}
-
         private void dataGridView_turyst_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
         {
             if (dataGridView_turyst.RowCount > 0 && dataGridView3.RowCount>0)
@@ -317,17 +233,15 @@ namespace project_logic_client_on_form
         {
             if (e.TabPageIndex == 0)
             {
-                label3.Text = "Вільні кімнати відсутні";
+                label20.Text = "Вільні кімнати відсутні";
                 tabcontrol_status = 0;
-                dataGridView5.Visible = true;
-                dataGridView3.Visible = false;
+                button5.Enabled = false;
             }
             if (e.TabPageIndex == 1)
             {
                 label3.Text = "Вільні автомобілі відсутні";
                 tabcontrol_status = 1;
-                dataGridView5.Visible = false;
-                dataGridView3.Visible = true;
+                button5.Enabled = false;
             }
             if (e.TabPageIndex == 2)
             {
@@ -335,7 +249,6 @@ namespace project_logic_client_on_form
                 label19.Text = label18.Text;
                 tabcontrol_status = 2;
                 // завантаження даних про заявки даного користувача про автомобілі
-                SqlCommand comand = new SqlCommand("select DISTINCT Date_bginning,Date_end,Mark,License_plate,Location,C.Price from Car_reservation C,Cars where C.Car_IDFK = Cars.Car_ID AND Turyst_IDFK = '" + value._id_turyst + "' AND Status = 'дійсна'");
                 HasRows_car(conect);
             }
             button6.Enabled = false;
@@ -344,33 +257,6 @@ namespace project_logic_client_on_form
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             Application.Exit();
-        }
-
-        private void dataGridView2_RowEnter(object sender, DataGridViewCellEventArgs e)
-        {
-           /* if(tabcontrol_status == 1)
-            if (e.RowIndex >= 0)
-            {
-                DataGridViewRow row = dataGridView2.Rows[e.RowIndex];
-
-                value.nameLocation = row.Cells["Локація"].Value.ToString();
-                Rental_name = row.Cells["Прокатник"].Value.ToString();
-                // пошук доступних автомобілів
-                GetData("select  Mark AS Марка,Color AS Колір,License_plate AS Номер, Type_kpp AS тип_КПП, Motor AS Двигун, Vypusk AS Рік_випуску, Places AS Мість, Litr_on_100 AS витрати_на_100, Cars.Price AS Ціна_прокату from Cars where "
-                    + "Car_ID NOT IN (select Car_IDFK From Car_reservation where Status = 'дійсна')"// AND Date_bginning >= CAST('"+value.date_beginning+"' AS date) AND Date_end <= CAST('"+value.date_end+"' AS date)) "
-                    + "AND "
-                    + " Rental_Point_IDFK = any (select Rental_Point_ID from Rental_Point where LocationFK LIKE '" + value.nameLocation + "%' AND Rental_NameFK LIKE '" + Rental_name + "%')", dataGridView3, bindingSource2);
-                if (dataGridView3.RowCount > 0)
-                {
-                   // button4.Enabled = true;
-                    label3.Visible = false;
-                }
-                else
-                {
-                    button4.Enabled = false;
-                    label3.Visible = true;
-                }
-            }*/
         }
 
         private void вихідToolStripMenuItem_Click(object sender, EventArgs e)
@@ -392,31 +278,20 @@ namespace project_logic_client_on_form
             }
 
         }
-
-        private void dataGridView4_RowEnter(object sender, DataGridViewCellEventArgs e)
-        {
-            //dataGridView4_CellClick(sender, e);
-        }
-
         private void button5_Click(object sender, EventArgs e)
         {
             Rezervation frm = new Rezervation();
             frm.ShowDialog();
-            button4.Enabled = true;
+            label22.Text += value.label;
+            if (tabcontrol_status == 0) Room_view();
+            else
+                if (tabcontrol_status == 1) Car_view();
         }
-        private void button4_Click_1(object sender, EventArgs e)
+        private void button4_Click_1(object sender, EventArgs e) // резервування автомобілів та кімнат
         {
             if (dataGridView5.Visible == true)
             {
-                label1.Text = value.date_beginning;
-                label11.Text = value.date_end;
-                label12.Text = value.k_day.ToString();
-                label13.Text = value._id_turyst;
-                label14.Text = value.nameLocation;
-                label15.Text = value.price_room;
                 double price = value.k_day * Convert.ToDouble(value.price_room);
-                label16.Text = price.ToString();
-                label17.Text = value._id_room;
                 conect.Open();
                 comand.CommandText = "INSERT INTO [dbo].[Room_reservation] "
                                     + "([Room_IDFK]"
@@ -430,20 +305,12 @@ namespace project_logic_client_on_form
                 comand.ExecuteNonQuery();
                 MessageBox.Show("Заявку додано.");
                 conect.Close();
-                // пошук доступних кімнат
+                // обновляєм список доступних автомобілів
                 Room_view();
             }
             else
             {
-                label1.Text = value.date_beginning;
-                label11.Text = value.date_end;
-                label12.Text = value.k_day.ToString();
-                label13.Text = value._id_turyst;
-                label14.Text = value.nameLocation;
-                label15.Text = value.price_car;
                 double price = value.k_day * Convert.ToDouble(value.price_car);
-                label16.Text = price.ToString();
-                label17.Text = value._id_car;
                 conect.Open();
                 comand.CommandText = "INSERT INTO [dbo].[Car_reservation] "
                 + "([Date_bginning]"
@@ -458,10 +325,12 @@ namespace project_logic_client_on_form
                 comand.ExecuteNonQuery();
                 MessageBox.Show("Заявку додано.");
                 conect.Close();
+                // обнавляєм список доступних автомобілів
+                Car_view();
             }
             button4.Enabled = false;
         }
-        public int HasRows_car(SqlConnection connection)
+        public int HasRows_car(SqlConnection connection) // пошук заявок на автомобілі для конкретного користувача
         {
             SqlCommand comand = new SqlCommand("select DISTINCT Date_bginning,Date_end,Mark,License_plate,Location,C.Price,C.ID FROM Car_reservation C,Cars where C.Car_IDFK = Cars.Car_ID AND Turyst_IDFK = '" + value._id_turyst + "' AND Status = 'дійсна'");
             int i = 0;
@@ -492,8 +361,13 @@ namespace project_logic_client_on_form
                     dataGridView_reservation.Rows.Add(date_begin, date_end, reader.GetString(2), reader.GetString(3), reader.GetString(4), reader.GetDecimal(5),reader.GetInt32(6));
                 }
                 dataGridView_reservation.Columns[6].Visible = false;
-                dataGridView_reservation.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
-                dataGridView_reservation.Columns[2].Width = 100;
+                dataGridView_reservation.Columns[0].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridView_reservation.Columns[1].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                //dataGridView_reservation.Columns[2].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridView_reservation.Columns[3].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridView_reservation.Columns[4].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+                dataGridView_reservation.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+               // dataGridView_reservation.Columns[2].Width = 200;
             }
             else
             {
@@ -505,7 +379,7 @@ namespace project_logic_client_on_form
             return i;
         }
 
-        public void HasRows_room(SqlConnection connection)
+        public void HasRows_room(SqlConnection connection) // пошук завок на кімнату для конкретного користувача
         {
             SqlCommand comand = new SqlCommand("select DISTINCT Date_beginning,Date_end,Hotel_Name,Room.Room_Number,Hotel.LocationFK,R.Price, R.ID from Room_reservation R,Hotel,Room "
                   + "where Room.Room_ID = R.Room_IDFK AND Turyst_IDFK = '" + value._id_turyst + "' AND Room.Hotel_IDFK = Hotel.Hotel_ID AND R.Status = 'дійсна'");
@@ -524,7 +398,7 @@ namespace project_logic_client_on_form
                 dataGridView_reservation_room.Columns.Add("Location", "Локація");
                 dataGridView_reservation_room.Columns.Add("Price", "Вартість");
                 dataGridView_reservation_room.Columns.Add("ID", "ID");
-                label18.Visible = false;
+                label19.Visible = false;
                 while (reader.Read())
                 {
                     // ************ Відсікання часу від дати ***********
@@ -538,6 +412,7 @@ namespace project_logic_client_on_form
                     dataGridView_reservation_room.Rows.Add(date_begin, date_end, reader.GetString(2), reader.GetInt32(3), reader.GetString(4), reader.GetDecimal(5),reader.GetInt32(6));
                 }
                 dataGridView_reservation_room.Columns[6].Visible = false;
+                dataGridView_reservation_room.Columns[5].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
             }
             else
             {
@@ -564,12 +439,12 @@ namespace project_logic_client_on_form
             button6.Enabled = false;
         }
 
-        private void button6_Click(object sender, EventArgs e)
+        private void button6_Click(object sender, EventArgs e) // скасування заявок
         {
             if (tabcontrol_status2 == 0)
             {
                 conect.Open();
-                comand.CommandText = "update Car_reservation set Status = 'завершена' where Status = 'дійсна' and ID = '"+_id_car_reservation+"' ";
+                comand.CommandText = "update Car_reservation set Status = 'скасована' where Status = 'дійсна' and ID = '"+_id_car_reservation+"' ";
                 comand.Connection = conect;
                 comand.ExecuteNonQuery();
                 MessageBox.Show("Заявку скасовано.");
@@ -579,13 +454,14 @@ namespace project_logic_client_on_form
             if (tabcontrol_status2 == 1)
             {
                 conect.Open();
-                comand.CommandText = "update Room_reservation set Status = 'завершена' where Status = 'дійсна' and ID = '"+_id_room_reservation+"' ";
+                comand.CommandText = "update Room_reservation set Status = 'скасована' where Status = 'дійсна' and ID = '"+_id_room_reservation+"' ";
                 comand.Connection = conect;
                 comand.ExecuteNonQuery();
                 MessageBox.Show("Заявку скасовано.");
                 conect.Close();
                 HasRows_room(conect);
             }
+            button6.Enabled = false;
         }
 
         private void dataGridView_reservation_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -606,25 +482,22 @@ namespace project_logic_client_on_form
                 button6.Enabled = true;
             }
         }
-        private void dataGridView5_CellClick(object sender, DataGridViewCellEventArgs e)
+        private void dataGridView5_CellClick(object sender, DataGridViewCellEventArgs e) // вибір кімнати для резервування
         {
-            button4.Enabled = true;
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dataGridView5.Rows[e.RowIndex];
                 value.price_room = row.Cells["Ціна_оренди"].Value.ToString();
                 value._id_room = row.Cells["Room_ID"].Value.ToString();
-                label21.Text = row.Cells["Номер"].Value.ToString();
-                label1.Text = value.date_beginning;
-                label11.Text = value.date_end;
-                label12.Text = value.k_day.ToString();
-                label13.Text = value._id_turyst;
-                label14.Text = value.nameLocation;
-                label15.Text = value.price_room;
-                double price = value.k_day * Convert.ToDouble(value.price_room);
-                label16.Text = price.ToString();
-                label17.Text = value._id_room;
+                if (value.date_beginning != "" && value.date_end != "") button4.Enabled = true;
             }
+        }
+
+        private void назадToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form2 frm = new Form2();
+            frm.Show();
+            base.Hide();
         }
 
     }
