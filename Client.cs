@@ -69,8 +69,7 @@ namespace project_logic_client_on_form
             label8.Text = value.Surname_turyst;
             label10.Text = value.email_turyst;
             // ***************************************
-            GetData("select Name_Location from dbo.Location order by Name_Location,Location_ID", dataGridView4, bindingSource1);
-            dataGridView4.Rows[0].SetValues("Усі локації");
+            Location_view(conect);
         }
         
         private void GetData(string selectCommand, System.Windows.Forms.DataGridView datagrid, System.Windows.Forms.BindingSource bindingSource) // сама чотка функція
@@ -100,7 +99,7 @@ namespace project_logic_client_on_form
             label3.Visible = false;
             label22.Text = "Вільні кімнати" + value.label;
             GetData("select Room_Number AS Номер,Category AS Категорія,Price AS Ціна_оренди, Hotel_IDFK, Room_ID FROM Room where "
-    		        +"Room_ID NOT IN (select Room_IDFK FROM Room_reservation where  Status ='дійсна' "
+			        +"Room_ID NOT IN (select Room_IDFK FROM Room_reservation where  Status ='дійсна' "
 					+"AND((Date_end >= CAST('"+value.date_beginning+"' AS date) and Date_end <= CAST('"+value.date_end+"' AS date)) "
 					+"OR (Date_beginning >= CAST('"+value.date_beginning+"' AS date) and Date_beginning <= CAST('"+value.date_end+"' AS date))))"
 			        +"AND Hotel_IDFK IN (select Hotel_ID from Hotel where Hotel_Name Like '"+name_hotel+"%' and LocationFK Like '"+value.nameLocation+"%')",dataGridView5,bindingSource_room);
@@ -420,6 +419,23 @@ namespace project_logic_client_on_form
             }
             reader.Close();
             connection.Close();
+        }
+
+        public void Location_view(SqlConnection cn)
+        {
+            SqlCommand comand = new SqlCommand("select Name_Location from dbo.Location order by Name_Location");
+            cn.Open();
+            comand.Connection = cn;
+            SqlDataReader reader = comand.ExecuteReader();
+            dataGridView4.Rows.Clear();
+            dataGridView4.Columns.Clear();
+            if (reader.HasRows)
+            {
+                dataGridView4.Columns.Add("Name_Location","Локація");
+                dataGridView4.Rows.Add("Усі локації");
+                while (reader.Read())
+                    dataGridView4.Rows.Add(reader.GetString(0));
+            }
         }
 
         private void tabControl2_Selecting(object sender, TabControlCancelEventArgs e)
