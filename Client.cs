@@ -6,8 +6,6 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.Data.SqlClient;
-using System.Data;
 
 namespace project_logic_client_on_form
 {
